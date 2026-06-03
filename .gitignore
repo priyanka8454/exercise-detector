@@ -76,17 +76,43 @@ target/
 # Jupyter NB Checkpoints
 .ipynb_checkpoints/
 
-# Large local data (not needed for deployed web app)
-data/raw/
-data/interim/
-data/processed/
+# Training data, uploads, and local artifacts (not for public repo)
+data/
 uploads/
-reports/figures/
+reports/
+references/
+notebooks/
+docs/
+
+# macOS resource forks accidentally committed from MetaMotion
+**/._*
+.DS_Store
+
+# Dev / internal docs (keep README.md and DEPLOY_GITHUB.md in repo)
+DEPLOYMENT_GUIDE.md
+DEPLOY_SIMPLE.md
+IMPLEMENTATION_GUIDE.md
+PROJECT_REPORT.md
+QUICKSTART.md
+START_HERE.txt
+README_FULLSTACK.md
+
+# Dev scripts and extra samples
+check_features.py
+create_sample.py
+quick_train.py
+save_model.py
+test_api.py
+sample_with_features.csv
+sample_bench_press.csv
 sample_processed_features.csv
+environment.yml
+requirements.txt
 condaenv.*.txt
 
-# exclude data from source control by default
-# /data/
+# Duplicate training entrypoints (runtime uses src/)
+models/train_model.py
+models/LearningAlgorithms.py
 
 # Mac OS-specific storage files
 .DS_Store
