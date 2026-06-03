@@ -76,6 +76,15 @@ target/
 # Jupyter NB Checkpoints
 .ipynb_checkpoints/
 
+# Large local data (not needed for deployed web app)
+data/raw/
+data/interim/
+data/processed/
+uploads/
+reports/figures/
+sample_processed_features.csv
+condaenv.*.txt
+
 # exclude data from source control by default
 # /data/
 

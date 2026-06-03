@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #060b14;
+            --bg-card: #0d1526;
+            --bg-elevated: #141f35;
+            --border: #243b5c;
+            --accent-bright: #60a5fa;
+            --accent-glow: rgba(37, 99, 235, 0.4);
+            --text: #f1f5f9;
+            --text-muted: #8b9cb8;
+            --success: #34d399;
+            --error: #fb7185;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg-deep);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37, 99, 235, 0.35), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(30, 64, 175, 0.2), transparent);
+            min-height: 100vh;
+            padding: 28px 16px 48px;
+            color: var(--text);
+        }
+        .wrap { max-width: 640px; margin: 0 auto; }
+        .container {
+            background: linear-gradient(180deg, rgba(20, 31, 53, 0.9) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.08), 0 24px 48px rgba(0, 0, 0, 0.45);
+            padding: 36px 32px 40px;
+        }
+        .header { text-align: center; margin-bottom: 24px; }
+        .logo {
+            width: 56px; height: 56px; margin: 0 auto 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+        .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .header p { color: var(--text-muted); font-size: 14px; }
+
+        .guide {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
+        .guide h2 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-bright);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+        }
+        .guide p { margin-bottom: 8px; }
+        .guide p:last-child { margin-bottom: 0; }
+        .guide strong { color: var(--text); font-weight: 600; }
+
+        .tabs {
+            display: flex; gap: 6px; margin-bottom: 20px;
+            padding: 5px; background: var(--bg-deep);
+            border-radius: 12px; border: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1; padding: 11px; border: none; background: transparent;
+            color: var(--text-muted); font-weight: 600; font-size: 14px;
+            cursor: pointer; border-radius: 9px; transition: all 0.2s;
+            font-family: inherit;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: #fff; box-shadow: 0 4px 14px var(--accent-glow);
+        }
+        .tab-content { display: none; animation: fade 0.25s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(6, 11, 20, 0.5);
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: var(--accent-bright);
+            background: rgba(37, 99, 235, 0.06);
+        }
+        .upload-icon { font-size: 40px; margin-bottom: 10px; }
+        .upload-text { font-weight: 600; font-size: 15px; }
+        .upload-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+        .file-name { margin-top: 10px; font-size: 13px; color: var(--accent-bright); }
+        input[type="file"] { display: none; }
+
+        .json-input {
+            width: 100%; height: 140px; padding: 14px;
+            background: var(--bg-deep); border: 1px solid var(--border);
+            border-radius: 12px; color: #7dd3fc;
+            font-family: Consolas, monospace; font-size: 11px;
+            resize: vertical; margin-bottom: 12px;
+        }
+        .json-input:focus {
+            outline: none; border-color: #3b82f6;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .hint { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            flex: 1; min-width: 140px; padding: 14px 20px;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: #fff; border: none; border-radius: 12px;
+            font-weight: 600; font-size: 15px; cursor: pointer;
+            font-family: inherit; transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px var(--accent-glow);
+        }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .btn-secondary {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            border-color: var(--accent-bright);
+            color: var(--accent-bright);
+        }
+        .btn-full { width: 100%; flex: none; }
+
+        .loading { display: none; text-align: center; padding: 32px 0; }
+        .spinner {
+            width: 44px; height: 44px; margin: 0 auto 14px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-bright);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error, .success {
+            display: none; padding: 14px; border-radius: 12px;
+            margin-bottom: 12px; font-size: 14px;
+        }
+        .error.show {
+            display: block;
+            background: rgba(251, 113, 133, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(251, 113, 133, 0.3);
+        }
+        .success.show {
+            display: block;
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+        .notice {
+            display: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #fcd34d;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            line-height: 1.45;
+        }
+        .notice.show { display: block; }
+
+        .result {
+            display: none; margin-top: 16px; padding: 24px;
+            background: var(--bg-elevated);
+            border-radius: 16px; border: 1px solid var(--border);
+        }
+        .result.show { display: block; animation: fade 0.4s ease; }
+        .result-hero {
+            text-align: center; padding-bottom: 20px;
+            margin-bottom: 20px; border-bottom: 1px solid var(--border);
+        }
+        .result-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 6px;
+        }
+        .exercise-badge {
+            font-size: 32px; font-weight: 800; text-transform: capitalize;
+            background: linear-gradient(135deg, #fff, var(--accent-bright));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-value { font-size: 22px; font-weight: 700; color: var(--accent-bright); }
+        .confidence-bar {
+            background: var(--bg-deep); height: 10px; border-radius: 10px;
+            margin-top: 10px; overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%; border-radius: 10px;
+            background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+            transition: width 0.5s ease;
+        }
+        .probabilities {
+            margin-top: 16px; padding: 14px;
+            background: var(--bg-deep); border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .prob-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0; border-bottom: 1px solid rgba(36, 59, 92, 0.6);
+        }
+        .prob-item:last-child { border-bottom: none; }
+        .prob-bar-wrap {
+            flex: 1; height: 6px; background: var(--bg-elevated);
+            border-radius: 6px; overflow: hidden;
+        }
+        .prob-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1e40af, #60a5fa);
+            border-radius: 6px;
+        }
+        .prob-name { width: 80px; font-size: 13px; text-transform: capitalize; }
+        .prob-value { width: 44px; text-align: right; font-size: 13px; font-weight: 600; color: var(--accent-bright); }
+        .result-item { margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="container">
+            <div class="header">
+                <div class="logo">🏋️</div>
+                <h1>Exercise Detector</h1>
+                <p>AI-powered workout recognition</p>
+            </div>
+
+            <div class="guide">
+                <h2>Guide</h2>
+                <p><strong>What it does:</strong> Upload movement data from a phone or fitness sensor. The app guesses which exercise you were doing (bench press, squat, row, and more).</p>
+                <p><strong>How to use:</strong> Tap <strong>Try demo</strong> or upload a workout file from your sensor app and tap <strong>Analyze</strong>. If a few numbers are missing, we try to fix them automatically.</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('csv', this)">Upload file</button>
+                <button class="tab-btn" onclick="switchTab('json', this)">Advanced</button>
+            </div>
+
+            <div id="csv" class="tab-content active">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📂</div>
+                    <div class="upload-text">Choose your workout file</div>
+                    <div class="upload-hint">CSV from your sensor app</div>
+                    <div class="file-name" id="fileName"></div>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <button class="btn btn-full" id="predictCsvBtn" onclick="predictFromCSV()" disabled>Analyze</button>
+                <div style="margin-top:14px">
+                    <button class="btn btn-secondary btn-full" onclick="tryDemo()">Try demo</button>
+                </div>
+            </div>
+
+            <div id="json" class="tab-content">
+                <textarea id="jsonInput" class="json-input" placeholder="Sensor data as JSON…"></textarea>
+                <p class="hint" id="jsonHint">For developers or custom integrations.</p>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-secondary" onclick="loadSampleJson()">Load sample</button>
+                    <button class="btn" onclick="predictFromJSON()">Analyze</button>
+                </div>
+            </div>
+
+            <div id="error" class="error"></div>
+            <div id="notice" class="notice"></div>
+            <div id="success" class="success"></div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p style="color:var(--text-muted)">Analyzing…</p>
+            </div>
+
+            <div id="result" class="result">
+                <div class="result-hero">
+                    <div class="result-label">Exercise</div>
+                    <div class="exercise-badge" id="exerciseResult">—</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Confidence</div>
+                    <div class="result-value" id="confidenceResult">—</div>
+                    <div class="confidence-bar"><div class="confidence-fill" id="confidenceFill"></div></div>
+                </div>
+                <div class="probabilities">
+                    <div class="result-label" style="margin-bottom:10px">Other possibilities</div>
+                    <div id="probabilitiesContainer"></div>
+                </div>
+                <button class="btn btn-secondary btn-full" onclick="resetResults()" style="margin-top:16px">Start over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SENSOR_COLS = ['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'];
+        const MIN_ROWS = 16;
+        const LABELS = {
+            bench: 'Bench press', squat: 'Squat', row: 'Row',
+            ohp: 'Overhead press', dead: 'Deadlift', rest: 'Rest'
+        };
+
+        function stripMeta(data) {
+            const out = {};
+            for (const k of SENSOR_COLS) if (data[k] !== undefined) out[k] = data[k];
+            return out;
+        }
+
+        function validateSensorData(data) {
+            if (SENSOR_COLS.some(c => !(c in data)))
+                return 'Your data is missing some sensor readings.';
+            const n = Math.min(...SENSOR_COLS.map(c => Array.isArray(data[c]) ? data[c].length : 0));
+            if (n < MIN_ROWS) return 'Please add more movement data and try again.';
+            return null;
+        }
+
+        async function parseJsonResponse(res) {
+            const text = await res.text();
+            try { return JSON.parse(text); }
+            catch { throw new Error('refresh'); }
+        }
+
+        async function tryDemo() {
+            showLoading(true);
+            clearMessages();
+            document.getElementById('result').classList.remove('show');
+            try {
+                let res = await fetch('/api/predict-demo', { method: 'POST' });
+                if (res.status === 404 || res.status === 405) {
+                    const sampleRes = await fetch('/api/sample-sensor');
+                    const sensor = await parseJsonResponse(sampleRes);
+                    if (!sampleRes.ok) throw new Error('demo');
+                    res = await fetch('/api/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(stripMeta(sensor))
+                    });
+                }
+                const data = await parseJsonResponse(res);
+                if (res.ok && data.success) {
+                    displayResults(data);
+                    showSuccess('Done!');
+                } else showError(data.error || 'Demo not available. Try again.');
+            } catch (e) {
+                if (e.message === 'refresh') {
+                    showError('Restart python app.py, then refresh this page (Ctrl+F5).');
+                } else {
+                    showError('Server not running. In terminal: cd data-science-template, then python app.py');
+                }
+            } finally { showLoading(false); }
+        }
+
+        async function loadSampleJson() {
+            try {
+                const res = await fetch('/api/sample-sensor');
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch {
+                    showError('Server error. Refresh the page.');
+                    return;
+                }
+                if (!res.ok) { showError(data.error || 'Could not load sample'); return; }
+                document.getElementById('jsonInput').value = JSON.stringify(stripMeta(data), null, 2);
+                document.getElementById('jsonHint').textContent = 'Sample loaded. Click Analyze.';
+                clearMessages();
+            } catch (err) {
+                showError('Could not load sample.');
+            }
+        }
+
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            btn.classList.add('active');
+            clearMessages();
+        }
+
+        const uploadArea = document.getElementById('uploadArea');
+        const csvFile = document.getElementById('csvFile');
+        const predictCsvBtn = document.getElementById('predictCsvBtn');
+        const fileName = document.getElementById('fileName');
+
+        uploadArea.onclick = () => csvFile.click();
+        csvFile.onchange = () => {
+            if (csvFile.files.length) {
+                fileName.textContent = csvFile.files[0].name;
+                predictCsvBtn.disabled = false;
+                clearMessages();
+            }
+        };
+        uploadArea.ondragover = e => { e.preventDefault(); uploadArea.classList.add('drag-over'); };
+        uploadArea.ondragleave = () => uploadArea.classList.remove('drag-over');
+        uploadArea.ondrop = e => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            csvFile.files = e.dataTransfer.files;
+            if (csvFile.files.length) {
+                fileName.textContent = csvFile.files[0].name;
+                predictCsvBtn.disabled = false;
+            }
+        };
+
+        async function predictFromCSV() {
+            if (!csvFile.files.length) { showError('Please choose a file first.'); return; }
+            showLoading(true);
+            clearMessages();
+            document.getElementById('result').classList.remove('show');
+            const fd = new FormData();
+            fd.append('file', csvFile.files[0]);
+            try {
+                const res = await fetch('/api/predict-csv', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    displayResults(data);
+                    showSuccess('Analysis complete!');
+                } else showError(data.error || 'Could not analyze this file.');
+            } catch {
+                showError('Could not connect. Is the server running?');
+            } finally { showLoading(false); }
+        }
+
+        async function predictFromJSON() {
+            let data;
+            try { data = JSON.parse(document.getElementById('jsonInput').value); }
+            catch { showError('Invalid JSON.'); return; }
+            data = stripMeta(data);
+            const err = validateSensorData(data);
+            if (err) { showError(err); return; }
+            showLoading(true);
+            clearMessages();
+            try {
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    displayResults(result);
+                    showSuccess('Done!');
+                } else showError(result.error || 'Analysis failed.');
+            } catch {
+                showError('Could not connect.');
+            } finally { showLoading(false); }
+        }
+
+        function showNotices(list) {
+            const el = document.getElementById('notice');
+            if (list && list.length) {
+                el.innerHTML = list.map(n => '• ' + n).join('<br>');
+                el.classList.add('show');
+            } else {
+                el.classList.remove('show');
+                el.innerHTML = '';
+            }
+        }
+
+        function displayResults(data) {
+            showNotices(data.notices || []);
+            const name = LABELS[data.exercise] || data.exercise;
+            document.getElementById('exerciseResult').textContent = name;
+            document.getElementById('confidenceResult').textContent = data.confidence_percent + '%';
+            document.getElementById('confidenceFill').style.width = data.confidence_percent + '%';
+            const maxP = Math.max(...Object.values(data.all_probabilities));
+            document.getElementById('probabilitiesContainer').innerHTML =
+                Object.entries(data.all_probabilities)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([ex, prob]) => {
+                        const label = LABELS[ex] || ex;
+                        const pct = (prob * 100).toFixed(1);
+                        const w = maxP > 0 ? (prob / maxP * 100) : 0;
+                        return `<div class="prob-item">
+                            <span class="prob-name">${label}</span>
+                            <div class="prob-bar-wrap"><div class="prob-bar" style="width:${w}%"></div></div>
+                            <span class="prob-value">${pct}%</span>
+                        </div>`;
+                    }).join('');
+            document.getElementById('result').classList.add('show');
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetResults() {
+            document.getElementById('result').classList.remove('show');
+            csvFile.value = '';
+            fileName.textContent = '';
+            predictCsvBtn.disabled = true;
+            clearMessages();
+        }
+
+        function showLoading(on) {
+            document.getElementById('loading').style.display = on ? 'block' : 'none';
+        }
+        function showError(msg) {
+            const el = document.getElementById('error');
+            el.textContent = msg;
+            el.classList.add('show');
+        }
+        function showSuccess(msg) {
+            const el = document.getElementById('success');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+        function clearMessages() {
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('success').classList.remove('show');
+            document.getElementById('notice').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
