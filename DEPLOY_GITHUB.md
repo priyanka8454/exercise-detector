@@ -89,10 +89,13 @@ Render runs your Flask app 24/7 with a public link like `https://exercise-detect
 | **Name** | `exercise-detector` |
 | **Region** | Choose closest to you |
 | **Branch** | `main` |
-| **Runtime** | `Python 3` |
+| **Runtime** | `Python 3` (must be **3.11** — repo includes `runtime.txt`) |
 | **Build Command** | `pip install -r requirements-deploy.txt` |
 | **Start Command** | `gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app` |
 | **Plan** | Free |
+
+**Environment variable (if build still uses Python 3.14):**  
+Render → **Environment** → add `PYTHON_VERSION` = `3.11.9`, then **Manual Deploy** → **Clear build cache & deploy**.
 
 ### Step 4: Deploy
 
