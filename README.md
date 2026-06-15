@@ -1,3 +1,6 @@
+https://ai-exercise-detector-rifa.onrender.com
+
+
 # Exercise Detector
 
 AI web app that guesses gym exercises from movement sensor data (CSV upload or demo).
